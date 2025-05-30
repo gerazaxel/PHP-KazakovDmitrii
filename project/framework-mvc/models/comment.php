@@ -26,11 +26,22 @@ class Comment extends Orm
         $stmt = $this->db->prepare("INSERT INTO {$this->table} (article_id, user_id, content) VALUES (?, ?, ?)");
         return $stmt->execute([$articleId, $userId, $content]);
     }
-
+    
     public function getByArticleId($articleId)
     {
         $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE article_id = ? ORDER BY created_at DESC");
         $stmt->execute([$articleId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    public function getById($id)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function delete($commentId){
+        $stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE id = ?");
+        return $stmt->execute([$commentId]);
     }
 }

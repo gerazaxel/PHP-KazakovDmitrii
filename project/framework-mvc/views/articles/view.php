@@ -5,16 +5,25 @@
 <hr>
 <h3>Комментарии</h3>
 
-<?php if (!empty($comments)): ?>
-    <?php foreach ($comments as $comment): ?>
-        <div style="border:1px solid #ccc; padding: 10px; margin-bottom: 10px;">
-            <p><?= nl2br(htmlspecialchars($comment['content'])) ?></p>
-            <small>Пользователь: <?= $comment['user_id'] ?> | <?= $comment['created_at'] ?></small>
-        </div>
-    <?php endforeach; ?>
-<?php else: ?>
-    <p>Комментариев пока нет.</p>
-<?php endif; ?>
+<?php foreach ($comments as $comment): ?>
+    <div style="border:1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+        <p><?= nl2br(htmlspecialchars($comment['content'])) ?></p>
+        <small>Пользователь: <?= $comment['user_id'] ?> | <?= $comment['created_at'] ?></small>
+
+        <!-- Показываем кнопку "Удалить", если пользователь автор или админ -->
+        <?php if (
+            isset($_SESSION['user']) &&
+            ($_SESSION['user']['id'] == $comment['user_id'] || ($_SESSION['user']['is_admin'] ?? false))
+        ): ?>
+            <form method="POST" action="<?= BASE_URL ?>/articles/deleteComment" style="margin-top: 5px;" onsubmit="return confirm('Удалить комментарий?');">
+                <input type="hidden" name="comment_id" value="<?= $comment['id'] ?>">
+                <input type="hidden" name="article_id" value="<?= $article['id'] ?>">
+                <button type="submit">Удалить</button>
+            </form>
+        <?php endif; ?>
+    </div>
+<?php endforeach; ?>
+
 
 <hr>
 

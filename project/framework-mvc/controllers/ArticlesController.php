@@ -141,4 +141,37 @@ class ArticlesController extends Controller
         header('Location: ' . BASE_URL . '/articles/show/' . $id);
         exit;
     }
+     public function deleteComment()
+    {
+        if (!isset($_SESSION['user']['id'])) {
+            Message::set('error', 'Вы не авторизованы');
+            header('Location: ' . BASE_URL . '/login/login');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_id'], $_POST['article_id'])) {
+            $commentId = (int)$_POST['comment_id'];
+            $articleId = (int)$_POST['article_id'];
+            $userId = $_SESSION['user']['id'];
+
+            $commentModel = new Comment();
+            $comment = $commentModel->getById($commentId);
+
+            if ($comment && $comment['article_id'] == $articleId) {
+                if ($comment['user_id'] == $userId || ($_SESSION['user']['is_admin'] ?? false)) {
+                    $commentModel->delete($commentId);
+                    Message::set('success', 'Комментарий удалён');
+                } else {
+                    Message::set('error', 'Нет прав для удаления');
+                }
+            } else {
+                Message::set('error', 'Комментарий не найден');
+            }
+        }
+
+        header('Location: ' . BASE_URL . '/articles/show/' . ($_POST['article_id'] ?? ''));
+        exit;
+    }
+
+
 }

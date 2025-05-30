@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Казаков Дмитрий</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        .display {
+            color: black;
+            text-align: right;
+            font-size: 64px;
+            padding: 20px 10px;
+            margin-bottom: 10px;
+            height: 80px;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        button {
+            width: 66px;
+            height: 66px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+        }
+        button:active {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <!-- Первый ряд -->
+            <button class="gray" onclick="clearDisplay()">AC</button>
+            <button class="gray" onclick="toggleSign()">+/-</button>
+            <button class="gray" onclick="appendPercentage()">%</button>
+            <button class="orange" onclick="appendToDisplay('÷')">÷</button>
+            
+            <!-- Второй ряд -->
+            <button class="dark" onclick="appendToDisplay('7')">7</button>
+            <button class="dark" onclick="appendToDisplay('8')">8</button>
+            <button class="dark" onclick="appendToDisplay('9')">9</button>
+            <button class="orange" onclick="appendToDisplay('×')">×</button>
+            
+            <!-- Третий ряд -->
+            <button class="dark" onclick="appendToDisplay('4')">4</button>
+            <button class="dark" onclick="appendToDisplay('5')">5</button>
+            <button class="dark" onclick="appendToDisplay('6')">6</button>
+            <button class="orange" onclick="appendToDisplay('-')">-</button>
+            
+            <!-- Четвертый ряд -->
+            <button class="dark" onclick="appendToDisplay('1')">1</button>
+            <button class="dark" onclick="appendToDisplay('2')">2</button>
+            <button class="dark" onclick="appendToDisplay('3')">3</button>
+            <button class="orange" onclick="appendToDisplay('+')">+</button>
+            
+            <!-- Пятый ряд -->
+            <button class="dark">🙄</button>
+            <button class="dark zero" onclick="appendToDisplay('0')">0</button>
+            <button class="dark" onclick="appendToDisplay('.')">.</button>
+            <button class="orange" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        let currentDisplay = '0';
+        let resetDisplay = false;
+        const display = document.getElementById('display');
+        
+        function appendToDisplay(value) {
+            if (currentDisplay === '0' || resetDisplay) {
+                currentDisplay = value;
+                resetDisplay = false;
+            } else {
+                currentDisplay += value;
+            }
+            display.textContent = currentDisplay;
+        }
+        
+        function clearDisplay() {
+            currentDisplay = '0';
+            display.textContent = currentDisplay;
+            document.querySelector('.gray').textContent = 'AC';
+        }
+        
+        function toggleSign() {
+            if (currentDisplay !== '0') {
+                if (currentDisplay.startsWith('-')) {
+                    currentDisplay = currentDisplay.substring(1);
+                } else {
+                    currentDisplay = '-' + currentDisplay;
+                }
+                display.textContent = currentDisplay;
+            }
+        }
+        
+        function appendPercentage() {
+            const value = parseFloat(currentDisplay) / 100;
+            currentDisplay = value.toString();
+            display.textContent = currentDisplay;
+        }
+        
+        function calculate() {
+            try {
+                // Заменяем символы для вычисления
+                let expr = currentDisplay.replace(/×/g, '*').replace(/÷/g, '/');
+                
+                // Отправляем данные на сервер
+                fetch('calculator.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `expression=${encodeURIComponent(expr)}`
+                })
+                .then(response => response.text())
+                .then(result => {
+                    currentDisplay = result;
+                    display.textContent = currentDisplay;
+                    resetDisplay = true;
+                })
+                .catch(error => {
+                    display.textContent = 'Ошибка';
+                    console.error('Error:', error);
+                });
+            } catch (error) {
+                display.textContent = 'Ошибка';
+            }
+        }
+    </script>
+</body>
+</html>
